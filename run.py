@@ -1,93 +1,73 @@
-import gspread
-from google.oauth2.service_account import Credentials
-from pprint import pprint
-
-SCOPE = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"
-    ]
-
-CREDS = Credentials.from_service_account_file('creds.json')
-SCOPED_CREDS = CREDS.with_scopes(SCOPE)
-GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
-SHEET = GSPREAD_CLIENT.open('love_sandwiches')
+#Random module for randomly acceting the value 
+#´X´indicates the ship hit
+#´-`
 
 
-def get_sales_data():
-    """
-    Get sales figures input from the user.
-    Run a while loop to collect a valid string of data from the user
-    via the terminal, which must be a string of 6 numbers separated
-    by commas. The loop will repeatedly request data, until it is valid.
-    """
-    while True:
-        print("Please enter sales data from the last market.")
-        print("Data should be six numbers, separated by commas.")
-        print("Example: 10,20,30,40,50,60\n")
+Hidden_Pattern=[[' ']*8 for x in range(8)]
+Guess_Pattern=[[' ']*8 for x in range(8)]
 
-        data_str = input("Enter your data here: ")
+let_to_num={'A':0,'B':1, 'C':2,'D':3,'E':4,'F':5,'G':6,'H':7}
 
-        sales_data = data_str.split(",")
+def print_board(board):
+    print(' A B C D E F G H')
+    print(' ***************')
+    row_num=1
+    for row in board:
+        print("%d|%s|" % (row_num, "|".join(row)))
+        row_num +=1
 
-        if validate_data(sales_data):
-            print("Data is valid!")
-            break
+def get_ship_location():
+    #Enter the row number between 1 to 8
+    row=input('Please enter a ship row 1-8 ').upper()
+    while row not in '12345678':
+        print("Please enter a valid row ")
+        row=input('Please enter a ship row 1-8 ')
+    #Enter the Ship column from A TO H
+    column=input('Please enter a ship column A-H ').upper()
+    while column not in 'ABCDEFGH':
+        print("Please enter a valid column ")
+        column=input('Please enter a ship column A-H ')
+    return int(row)-1,let_to_num[column]
 
-    return sales_data
-
-
-def validate_data(values):
-    """
-    Inside the try, converts all string values into integers.
-    Raises ValueError if strings cannot be converted into int,
-    or if there aren't exactly 6 values.
-    """
-    try:
-        [int(value) for value in values]
-        if len(values) != 6:
-            raise ValueError(
-                f"Exactly 6 values required, you provided {len(values)}"
-            )
-    except ValueError as e:
-        print(f"Invalid data: {e}, please try again.\n")
-        return False
-
-    return True
+#Function that creates the ships
+def create_ships(board):
+    for ship in range(5):
+        ship_r, ship_cl=randint(0,7), randint(0,7)
+        while board[ship_r][ship_cl] =='X':
+            ship_r, ship_cl = randi
+                    board[ship_r][ship_cl] = 'X'
 
 
-def update_sales_worksheet(data):
-    """
-    Update sales worksheet, add new row with the list data provided
-    """
-    print("Updating sales worksheet...\n")
-    sales_worksheet = SHEET.worksheet("sales")
-    sales_worksheet.append_row(data)
-    print("Sales worksheet updated successfully.\n")
 
+def count_hit_ships(board):
+    count=0
+    for row in board:
+        for column in row:
+            if column=='X':
+                count+=1
+    return count
 
-def calculate_surplus_data(sales_row):
-    """
-    Compare sales with stock and calculate the surplus for each item type.
-
-    The surplus is defined as the sales figure subtracted from the stock:
-    - Positive surplus indicates waste
-    - Negative surplus indicates extra made when stock was sold out.
-    """
-    print("Calculating surplus data...\n")
-    stock = SHEET.worksheet("stock").get_all_values()
-    stock_row = stock[-1]
-    print(stock_row)
-
-
-def main():
-    """
-    Run all program functions
-    """
-    data = get_sales_data()
-    sales_data = [int(num) for num in data]
-    update_sales_worksheet(sales_data)
-
-
-print("Welcome to Love Sandwiches Data Automation")
-main()
+create_ships(Hidden_Pattern)
+#print_board(Hidden_Pattern)
+turns = 10
+while turns > 0:
+    print('Welcome to Battleship')
+    print_board(Guess_Pattern)
+    row,column =get_ship_location()
+    if Guess_Pattern[row][column] == '-':
+        print(' You already guessed that ')
+    elif Hidden_Pattern[row][column] =='X':
+        print(' Congratulations you have hit the battleship ')
+        Guess_Pattern[row][column] = 'X'
+        turns -= 1
+    else:
+        print('Sorry,You missed')
+        Guess_Pattern[row][column] = '-'
+        turns -= 1
+    if  count_hit_ships(Guess_Pattern) == 5:
+        print("Congratulations you have sunk all the battleships ")
+        break
+    print(' You have ' +str(turns) + ' turns remaining ')
+    if turns == 0:
+        print('Game Over ')
+        break
